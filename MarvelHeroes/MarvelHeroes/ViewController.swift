@@ -11,6 +11,7 @@ import UIKit
 class ViewController: UIViewController {
 
   //MARK: - Properties
+  var hero: Hero!
 
   //MARK: - IBOutlets
   @IBOutlet weak var tfSearchCharacters: UITextField!
@@ -20,7 +21,10 @@ class ViewController: UIViewController {
     super.viewDidLoad()
     // Do any additional setup after loading the view, typically from a nib.
   }
-
-
+  
+  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+    let vc = segue.destination as! HeroesTableViewController
+    tfSearchCharacters.resignFirstResponder()
+    vc.name = tfSearchCharacters.text
+  }
 }
-
