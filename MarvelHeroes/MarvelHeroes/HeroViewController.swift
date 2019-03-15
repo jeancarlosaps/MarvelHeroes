@@ -12,6 +12,7 @@ import WebKit
 class HeroViewController: UIViewController {
   
   //MARK: - Properties
+  var hero: Hero!
   
   //MARK: - IBOutlets
   @IBOutlet weak var webViewHeroDetail: WKWebView!
@@ -20,6 +21,24 @@ class HeroViewController: UIViewController {
   //MARK: - Super Methods
   override func viewDidLoad() {
     super.viewDidLoad()
+    webViewConfiguration()
   }
   
+  func webViewConfiguration() {
+    let url = URL(string: hero.urls.first!.url)
+    let request = URLRequest(url: url!)
+    
+    title = hero.name
+    
+    webViewHeroDetail.allowsBackForwardNavigationGestures = true
+    webViewHeroDetail.navigationDelegate = self
+    webViewHeroDetail.load(request)
+  }
+}
+
+extension HeroViewController: WKNavigationDelegate {
+  func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+    self.loading.stopAnimating()
+    self.loading.hidesWhenStopped = true
+  }
 }

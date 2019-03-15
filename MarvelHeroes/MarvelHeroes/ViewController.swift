@@ -19,7 +19,6 @@ class ViewController: UIViewController {
   //MARK: - Super Methods
   override func viewDidLoad() {
     super.viewDidLoad()
-    // Do any additional setup after loading the view, typically from a nib.
   }
   
   override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

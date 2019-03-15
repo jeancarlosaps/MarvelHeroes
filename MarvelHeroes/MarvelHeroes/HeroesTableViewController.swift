@@ -13,12 +13,9 @@ class HeroesTableViewController: UITableViewController {
   // MARK: - Properties
   var name: String?
   var heroes: [Hero] = []
-  var loadingHeroes: Bool = false
-  var currentPage = 0
+  var loadingHeroes: Bool = true
+  var offset = 0
   var total = 0
-  
-  
-  // MARK: - IBOutlets
   
   // MARK: - Super Methods
   override func viewDidLoad() {
@@ -37,16 +34,18 @@ class HeroesTableViewController: UITableViewController {
   }()
   
   func loadHeroes() {
-    loadingHeroes = true
-    MarvelAPI.loadHeroes(name: name, page: currentPage) { (info) in
+    loadingHeroes = false
+    let offset = self.heroes.count == 0 ? 0 : self.heroes.count + 1
+    
+    MarvelAPI.loadHeroes(name: name, offset: offset) { (info) in
       if let info = info {
-        self.heroes += info.data.results
+        self.heroes.append(contentsOf: info.data.results)
         self.total = info.data.total
         
         print("Total: ", self.total, "- Já incluídos", self.heroes.count)
         
         DispatchQueue.main.async {
-          self.loadingHeroes = false
+          self.loadingHeroes = true
           self.label.text = "No heroes were found with the name \(self.name!)."
           self.tableView.reloadData()
         }
@@ -54,15 +53,31 @@ class HeroesTableViewController: UITableViewController {
     }
   }
   
-  // MARK: - Table view data source
+  private func activity() -> UIView {
+    let activityView = UIView(frame: CGRect.init(x: 0, y: 0, width: tableView.frame.width, height: 80))
+    let loadingTableView = UIActivityIndicatorView(style: UIActivityIndicatorView.Style.whiteLarge)
+    
+    loadingTableView.startAnimating()
+    loadingTableView.hidesWhenStopped = true
+    loadingTableView.center = activityView.center
+    activityView.backgroundColor = .black
+    activityView.addSubview(loadingTableView)
+    
+    tableView.backgroundColor = .black
+    return activityView
+  }
   
+  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+    let vc = segue.destination as! HeroViewController
+    vc.hero = heroes[tableView.indexPathForSelectedRow!.row]
+  }
+  
+  // MARK: - Table view data source
   override func numberOfSections(in tableView: UITableView) -> Int {
-    // #warning Incomplete implementation, return the number of sections
     return 1
   }
   
   override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    // #warning Incomplete implementation, return the number of rows
     tableView.backgroundView = heroes.count == 0 ? label : nil
     return heroes.count
   }
@@ -76,50 +91,15 @@ class HeroesTableViewController: UITableViewController {
     return cell
   }
   
-  /*
-   // Override to support conditional editing of the table view.
-   override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-   // Return false if you do not want the specified item to be editable.
-   return true
-   }
-   */
+  override func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+    return activity()
+  }
   
-  /*
-   // Override to support editing the table view.
-   override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-   if editingStyle == .delete {
-   // Delete the row from the data source
-   tableView.deleteRows(at: [indexPath], with: .fade)
-   } else if editingStyle == .insert {
-   // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-   }
-
-   }
-   */
-  
-  /*
-   // Override to support rearranging the table view.
-   override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-   
-   }
-   */
-  
-  /*
-   // Override to support conditional rearranging of the table view.
-   override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-   // Return false if you do not want the item to be re-orderable.
-   return true
-   }
-   */
-  
-  /*
-   // MARK: - Navigation
-   
-   // In a storyboard-based application, you will often want to do a little preparation before navigation
-   override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-   // Get the new view controller using segue.destination.
-   // Pass the selected object to the new view controller.
-   }
-   */
-  
+  // calling before the tableView shows a cell
+  override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+    if indexPath.row == heroes.count - 5 && loadingHeroes && heroes.count != total {
+      self.loadHeroes()
+      print("load more heroes")
+    }
+  }
 }

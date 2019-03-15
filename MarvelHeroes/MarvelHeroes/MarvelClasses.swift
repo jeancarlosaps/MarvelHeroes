@@ -38,7 +38,7 @@ struct Thumbnail: Codable {
     return path + "." + ext
   }
   
-  // DE - PARA, quando se é necessário utilizar alguma palavra reservada
+  // DE - PARA, when it is necessary to use some reserved word
   enum CodingKeys: String, CodingKey {
     case path
     case ext = "extension"
